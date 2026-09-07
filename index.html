@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bambu Studio Print Settings Guide</title>
+<style>
+  :root{
+    --bg:#2c2d30;
+    --panel:#34363a;
+    --panel2:#292b2f;
+    --line:#4b4e53;
+    --text:#f1f3f4;
+    --muted:#aeb3b8;
+    --green:#1fbe72;
+    --green2:#174d37;
+    --orange:#f0a33a;
+    --yellow:#ffd166;
+    --red:#ff6b6b;
+    --blue:#58a6ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#1f2023;color:var(--text);font-family:Segoe UI,Arial,sans-serif;font-size:14px}
+  button,input,select{font:inherit}
+  .app{min-height:100vh;background:var(--bg)}
+  .topbar{height:48px;background:#26282b;border-bottom:1px solid #111;display:flex;align-items:center;padding:0 14px;gap:18px}
+  .brand{font-weight:650;font-size:15px}
+  .version{color:#9aa0a6;font-size:12px}
+  .topnav{display:flex;gap:6px}
+  .topnav span{padding:10px 15px;border-radius:3px;color:#ddd}
+  .topnav .active{background:var(--green);color:white}
+  .layout{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 48px)}
+  .sidebar{background:#303236;border-right:1px solid #17181a;min-width:0}
+  .workspace{background:#55575c;display:flex;align-items:center;justify-content:center;padding:30px;color:#d8dade}
+  .plate{width:min(700px,90%);aspect-ratio:1.18;background:#43464b;border:2px solid #303237;border-radius:8px;position:relative;box-shadow:inset 0 0 0 1px #65686d}
+  .plate:before{content:"Bambu Textured PEI Plate";position:absolute;top:10px;left:50%;transform:translateX(-50%);font-weight:600;color:#8e9298}
+  .disk{position:absolute;left:15%;right:15%;top:19%;bottom:18%;border-radius:50%;background:rgba(180,184,189,.22);border:1px solid #777c82}
+  .settingsHeader{padding:12px;border-bottom:1px solid #202124;background:#2e3033}
+  .profileRow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}
+  .jobSelect{width:100%;background:#25272a;border:1px solid #4d5055;color:white;border-radius:4px;padding:9px 10px;margin-bottom:9px}
+  .jobMeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+  .chip{font-size:11px;border:1px solid #555b61;border-radius:999px;padding:3px 7px;color:#ccd0d4;background:#303338}
+  .futureNote{margin-top:8px;padding:8px 9px;background:#25272a;border-left:3px solid #58a6ff;color:#cbd3da;font-size:12px;line-height:1.4}
+  .profile{background:#282a2d;border:1px solid #4e5257;border-radius:4px;padding:9px 10px}
+  .badge{border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700;display:inline-block}
+  .badge.change{background:#60491d;color:#ffd678;border:1px solid #876a2c}
+  .badge.keep{background:#183e2d;color:#72dda4;border:1px solid #2b6c4c}
+  .badge.optional{background:#263d57;color:#8ec7ff;border:1px solid #3e638a}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .search{flex:1;min-width:160px;background:#25272a;border:1px solid #4d5055;color:white;border-radius:4px;padding:8px 9px}
+  .toggle{display:flex;align-items:center;gap:7px;color:#ddd;font-size:12px}
+  .toggle input{accent-color:var(--green)}
+  .modeTabs{display:flex;padding:10px 12px 0;gap:5px;background:#303236}
+  .modeBtn{border:0;background:#3a3d41;color:#d4d6d8;padding:8px 11px;border-radius:4px 4px 0 0;cursor:pointer}
+  .modeBtn.active{background:#242629;color:white;border-top:2px solid var(--green)}
+  .tabs{display:flex;gap:1px;padding:0 10px;background:#242629;border-bottom:1px solid #161719;overflow-x:auto}
+  .tab{border:0;background:transparent;color:#aeb2b7;padding:11px 12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+  .tab.active{color:#ffb75e;border-color:#ff9d2e}
+  .panel{background:#2d2f32;padding:10px 12px 18px;max-height:calc(100vh - 190px);overflow:auto}
+  .section{margin:8px 0 16px}
+  .sectionTitle{font-weight:650;margin:8px 0;padding-bottom:6px;border-bottom:1px solid #474a4f;color:#e8e8e8}
+  .setting{display:grid;grid-template-columns:minmax(150px,1fr) 110px 100px;gap:8px;align-items:center;padding:8px;border-radius:5px;margin:3px 0;border:1px solid transparent}
+  .setting.changed{background:#3d3726;border-color:#6c5a2b}
+  .setting.keepRow{background:#29362f;border-color:#365545}
+  .setting.optionalRow{background:#2d3540;border-color:#3e5065}
+  .label{min-width:0}
+  .label small{display:block;color:#999;margin-top:2px}
+  .current{color:#bbb;text-align:right}
+  .recommend{font-weight:700;text-align:right}
+  .changed .recommend{color:#ffd166}
+  .keepRow .recommend{color:#72dda4}
+  .optionalRow .recommend{color:#8ec7ff}
+  .path{font-size:11px;color:#a7abb1;margin-top:4px}
+  .detail{display:none;grid-column:1/-1;margin-top:5px;padding:8px 9px;background:#242629;border-left:3px solid #777;color:#c9cdd1;line-height:1.42}
+  .setting.open .detail{display:block}
+  .setting{cursor:pointer}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;padding:9px 12px;background:#242629;border-top:1px solid #17181a;font-size:12px;color:#bfc2c6}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
+  .dot.change{background:var(--yellow)}
+  .dot.keep{background:#72dda4}
+  .dot.optional{background:#8ec7ff}
+  .summaryBox{position:absolute;right:18px;bottom:18px;width:315px;background:#2e3034;border:1px solid #4d5055;border-radius:7px;padding:12px}
+  .summaryBox h3{font-size:14px;margin:0 0 8px}
+  .summaryBox ol{margin:0;padding-left:20px;color:#d4d6d8}
+  .summaryBox li{margin:5px 0}
+  .caution{color:#ffcf70}
+  .hidden{display:none!important}
+  @media(max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .workspace{display:none}
+    .panel{max-height:none}
+  }
+  @media(max-width:520px){
+    .setting{grid-template-columns:1fr 80px}
+    .recommend{grid-column:2}
+    .current{grid-column:2}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">Bambu Studio Print Guide <span class="version">reusable settings hub</span></div>
+    <div class="topnav"><span>Prepare</span><span class="active">Preview</span><span>Device</span><span>Project</span></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="settingsHeader">
+        <select class="jobSelect" id="jobSelect" aria-label="Print job profile">
+          <option value="asa_disk">Large flat ASA disk — anti-warp</option>
+        </select>
+        <div class="profileRow">
+          <div class="profile" id="jobProfile">
+            <b>Bambu Lab H2C</b><br>
+            <span style="color:#aaa">0.6 mm nozzle · Bambu ASA</span>
+            <div class="jobMeta">
+              <span class="chip">Large flat part</span>
+              <span class="chip">Problem: edge lifting</span>
+            </div>
+          </div>
+          <span class="badge change" id="countBadge">changes</span>
+        </div>
+        <div class="controls">
+          <input class="search" id="search" placeholder="Find a setting…">
+          <label class="toggle"><input type="checkbox" id="onlyChanges"> Only changes</label>
+        </div>
+        <div class="futureNote">
+          <b>Reusable page:</b> each future print can be added as another profile here. The same public URL can be updated instead of creating a new guide every time.
+        </div>
+      </div>
+
+      <div class="modeTabs">
+        <button class="modeBtn active" data-mode="process">Process</button>
+        <button class="modeBtn" data-mode="filament">Filament settings</button>
+      </div>
+
+      <div class="tabs" id="tabs"></div>
+      <div class="panel" id="panel"></div>
+
+      <div class="legend">
+        <span><span class="dot change"></span>Change</span>
+        <span><span class="dot keep"></span>Keep / verify</span>
+        <span><span class="dot optional"></span>Optional</span>
+        <span style="margin-left:auto">Click a row for why</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="plate">
+        <div class="disk"></div>
+        <div class="summaryBox">
+          <h3>Current profile priorities</h3>
+          <ol>
+            <li><b>15 mm brim</b>, <b>0 mm gap</b></li>
+            <li><b>100°C textured plate</b></li>
+            <li><b>65°C chamber target</b></li>
+            <li>Reduce normal part cooling to <b>0–15%</b></li>
+            <li>Slow, solid first layer</li>
+          </ol>
+          <div class="path caution" style="margin-top:8px">Targeted anti-warp overrides. If bridges suffer, restore stock cooling before changing adhesion settings.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const JOBS = {
+  asa_disk: {
+    name: "Large flat ASA disk — anti-warp",
+    machine: "Bambu Lab H2C",
+    nozzle: "0.6 mm nozzle",
+    filament: "Bambu ASA",
+    tags: ["Large flat part","Problem: edge lifting"]
+  }
+};
+
+const DATA = {
+  process: {
+    tabs:["Quality","Strength","Speed","Support","Others"],
+    groups:{
+      Quality:[
+        {section:"Layer height", label:"Layer height", current:"0.30 mm", rec:"0.30 mm", status:"keep", path:"Process → Quality → Layer height", why:"Your 0.30 mm Standard profile is appropriate for a 0.6 mm nozzle and this large functional part."},
+        {section:"Layer height", label:"Initial layer height", current:"check yours", rec:"0.30 mm", status:"optional", path:"Process → Quality → Initial layer height", why:"A 0.30 mm first layer gives a forgiving, substantial first layer with a 0.6 mm nozzle. If your existing profile is already around this value, leave it."}
+      ],
+      Strength:[
+        {section:"Walls", label:"Wall loops", current:"check yours", rec:"3", status:"optional", path:"Process → Strength → Walls → Wall loops", why:"Three walls is a good functional baseline. More walls can add contraction stress, so don't increase them just to fight warping."},
+        {section:"Sparse infill", label:"Sparse infill density", current:"check yours", rec:"10–15%", status:"optional", path:"Process → Strength → Sparse infill → Sparse infill density", why:"If the design does not require heavy infill, lower infill reduces the amount of plastic contracting inside the disk."},
+        {section:"Sparse infill", label:"Sparse infill pattern", current:"check yours", rec:"Gyroid", status:"optional", path:"Process → Strength → Sparse infill → Sparse infill pattern", why:"Gyroid avoids long straight stress lines and is a good general-purpose pattern. If the disk is too thin for sparse infill to exist, this setting won't matter."}
+      ],
+      Speed:[
+        {section:"First layer speed", label:"First layer", current:"check yours", rec:"25 mm/s", status:"change", path:"Process → Speed → First layer speed → First layer", why:"A slower first layer gives the ASA more time to wet and grip the PEI surface."},
+        {section:"First layer speed", label:"First layer infill", current:"check yours", rec:"35 mm/s", status:"change", path:"Process → Speed → First layer speed → First layer infill", why:"Keep the large first-layer fill controlled instead of racing across the plate."},
+        {section:"Other layers", label:"Outer wall", current:"check yours", rec:"60–80 mm/s", status:"optional", path:"Process → Speed → Other layers → Outer wall", why:"Moderate outer-wall speed can improve consistency on a very large ASA perimeter. This is secondary to brim, bed and chamber temperature."},
+        {section:"Other layers", label:"Inner wall", current:"check yours", rec:"100–120 mm/s", status:"optional", path:"Process → Speed → Other layers → Inner wall", why:"No need to make the whole print extremely slow. This is a conservative range for this warp-prone geometry."}
+      ],
+      Support:[
+        {section:"Support", label:"Enable support", current:"depends", rec:"Only if needed", status:"keep", path:"Process → Support → Enable support", why:"Supports do not prevent the disk from warping. Don't add them solely for bed adhesion."}
+      ],
+      Others:[
+        {section:"Skirt and brim", label:"Skirt loops", current:"0 / check yours", rec:"2", status:"optional", path:"Process → Others → Skirt and brim → Skirt loops", why:"Skirt loops prime the nozzle and provide a quick first-layer check. They do not hold the model down."},
+        {section:"Skirt and brim", label:"Brim type", current:"Auto", rec:"Outer brim only", status:"change", path:"Process → Others → Skirt and brim → Brim type", why:"For this large flat disk, use an attached outer brim rather than relying on Auto."},
+        {section:"Skirt and brim", label:"Brim width", current:"5 mm", rec:"15 mm", status:"change", path:"Process → Others → Skirt and brim → Brim width", why:"This is one of the biggest anti-warp improvements for your failed print. It gives the perimeter much more leverage against lifting."},
+        {section:"Skirt and brim", label:"Brim-object gap", current:"0.1 mm", rec:"0 mm", status:"change", path:"Process → Others → Skirt and brim → Brim-object gap", why:"Zero gap bonds the brim directly to the disk. It is harder to remove, but substantially more effective against lifting."},
+        {section:"Prime tower", label:"Enable", current:"On", rec:"Off*", status:"change", path:"Process → Others → Prime tower → Enable", why:"Turn this off if this plate is truly using only one filament/material and there are no tool/material changes. Your screenshot showed a prime-tower collision warning."}
+      ]
+    }
+  },
+  filament:{
+    tabs:["Filament","Cooling","Setting Overrides","Advanced","Notes","Multi Filament"],
+    groups:{
+      Filament:[
+        {section:"Temperature", label:"Nozzle temperature", current:"Bambu preset", rec:"270°C", status:"keep", path:"Filament settings → Filament → Nozzle temperature", why:"The current Bambu ASA H2C 0.6 mm system preset specifies 270°C. Do not lower it to 260°C for this setup unless you have calibration evidence."},
+        {section:"Temperature", label:"Textured PEI plate", current:"Bambu preset", rec:"100°C", status:"keep", path:"Filament settings → Filament → Bed temperature → Textured PEI Plate", why:"The current Bambu ASA base profile used by the H2C preset specifies 100°C for the textured plate."},
+        {section:"Temperature", label:"Chamber temperature", current:"Bambu preset", rec:"65°C", status:"keep", path:"Filament settings → Filament → Chamber temperature", why:"The current Bambu ASA H2C 0.6 mm system preset specifies a 65°C chamber target. This is especially useful for your large warp-prone disk."},
+        {section:"Flow", label:"Flow ratio", current:"Bambu preset", rec:"0.96", status:"keep", path:"Filament settings → Filament → Flow ratio", why:"The current H2C 0.6 mm Bambu ASA preset specifies 0.96. Leave calibrated filament-flow settings alone when troubleshooting warping."}
+      ],
+      Cooling:[
+        {section:"Part cooling fan", label:"Initial layer fan", current:"0% for 3 layers", rec:"0% for 5 layers", status:"change", path:"Filament settings → Cooling → Part cooling fan → Initial layer fan", why:"Keep direct cooling off longer while the bottom of the large disk establishes itself."},
+        {section:"Part cooling fan", label:"Min fan speed", current:"10%", rec:"0%", status:"change", path:"Filament settings → Cooling → Part cooling fan → Min fan speed", why:"This is a targeted anti-warp override for this large flat ASA print. It reduces edge cooling and thermal gradients."},
+        {section:"Part cooling fan", label:"Max fan speed", current:"35%", rec:"15%", status:"change", path:"Filament settings → Cooling → Part cooling fan → Max fan speed", why:"Lower normal cooling reduces differential shrinkage across the large disk. If bridges or overhangs degrade, this is the first override to relax."},
+        {section:"Part cooling fan", label:"Keep fan always on", current:"Off", rec:"Off", status:"keep", path:"Filament settings → Cooling → Part cooling fan → Keep fan always on", why:"Leave this unchecked for ASA anti-warp behavior."},
+        {section:"Part cooling fan", label:"Slow printing down for better layer cooling", current:"On", rec:"On", status:"keep", path:"Filament settings → Cooling → Part cooling fan → Slow printing down for better layer cooling", why:"Keep this enabled. It is better to slow tiny layers than force excessive fan."},
+        {section:"Overhangs", label:"Force cooling for overhangs and bridges", current:"On", rec:"On", status:"keep", path:"Filament settings → Cooling → Force cooling for overhangs and bridges", why:"Leave bridge/overhang cooling enabled so localized geometry can still receive cooling when needed."},
+        {section:"Overhangs", label:"Cooling overhang threshold", current:"25%", rec:"25%", status:"keep", path:"Filament settings → Cooling → Cooling overhang threshold", why:"No need to change this for the warping problem."}
+      ],
+      "Setting Overrides":[
+        {section:"Overrides", label:"No special change needed", current:"—", rec:"Leave default", status:"keep", path:"Filament settings → Setting Overrides", why:"The anti-warp changes for this print are mainly under Process → Others, Process → Speed, and Filament → Cooling."}
+      ],
+      Advanced:[
+        {section:"Advanced", label:"Maximum volumetric speed", current:"Bambu preset", rec:"Leave preset", status:"keep", path:"Filament settings → Advanced → Maximum volumetric speed", why:"Do not raise volumetric flow just because you have a 0.6 mm nozzle. Flow calibration is separate from warping."}
+      ],
+      Notes:[
+        {section:"Notes", label:"No change needed", current:"—", rec:"—", status:"keep", path:"Filament settings → Notes", why:"Nothing here is needed for anti-warp tuning."}
+      ],
+      "Multi Filament":[
+        {section:"Multi Filament", label:"No change needed", current:"—", rec:"—", status:"keep", path:"Filament settings → Multi Filament", why:"For a one-material ASA print, you should not need multi-filament tuning."}
+      ]
+    }
+  }
+};
+
+let mode="process";
+let activeTab=DATA.process.tabs[0];
+const tabsEl=document.getElementById("tabs");
+const panelEl=document.getElementById("panel");
+const searchEl=document.getElementById("search");
+const onlyEl=document.getElementById("onlyChanges");
+const countBadge=document.getElementById("countBadge");
+const jobSelect=document.getElementById("jobSelect");
+const jobProfile=document.getElementById("jobProfile");
+
+function renderJob(){
+  const j=JOBS[jobSelect.value] || JOBS.asa_disk;
+  jobProfile.innerHTML = `<b>${j.machine}</b><br><span style="color:#aaa">${j.nozzle} · ${j.filament}</span><div class="jobMeta">${j.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div>`;
+}
+jobSelect.addEventListener("change",()=>{ renderJob(); mode="process"; activeTab=DATA.process.tabs[0]; renderTabs(); renderPanel(); });
+
+function renderTabs(){
+  tabsEl.innerHTML="";
+  DATA[mode].tabs.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="tab"+(t===activeTab?" active":"");
+    b.textContent=t;
+    b.addEventListener("click",()=>{activeTab=t;renderTabs();renderPanel();});
+    tabsEl.appendChild(b);
+  });
+}
+
+function rowClass(s){
+  return s==="change"?"changed":s==="keep"?"keepRow":"optionalRow";
+}
+function badgeClass(s){
+  return s==="change"?"change":s==="keep"?"keep":"optional";
+}
+function statusText(s){
+  return s==="change"?"CHANGE":s==="keep"?"KEEP":"OPTIONAL";
+}
+
+function renderPanel(){
+  const q=searchEl.value.trim().toLowerCase();
+  const only=onlyEl.checked;
+  const all=[];
+  if(q){
+    Object.entries(DATA[mode].groups).forEach(([tab,arr])=>arr.forEach(x=>all.push({...x,_tab:tab})));
+  }else{
+    (DATA[mode].groups[activeTab]||[]).forEach(x=>all.push({...x,_tab:activeTab}));
+  }
+  const filtered=all.filter(x=>{
+    if(only && x.status!=="change") return false;
+    if(!q) return true;
+    return [x.label,x.section,x.path,x.why,x.rec,x.current,x._tab].join(" ").toLowerCase().includes(q);
+  });
+
+  const changes=Object.values(DATA[mode].groups).flat().filter(x=>x.status==="change").length;
+  countBadge.textContent=changes+" recommended changes";
+
+  panelEl.innerHTML="";
+  if(filtered.length===0){
+    panelEl.innerHTML='<div style="padding:22px;color:#aaa;text-align:center">No settings match this filter.</div>';
+    return;
+  }
+
+  let lastSection="";
+  filtered.forEach(item=>{
+    if(q){
+      const qhead=document.createElement("div");
+      qhead.className="path";
+      qhead.textContent=item._tab;
+      panelEl.appendChild(qhead);
+    }
+    if(item.section!==lastSection || q){
+      const h=document.createElement("div");
+      h.className="sectionTitle";
+      h.textContent=item.section;
+      panelEl.appendChild(h);
+      lastSection=item.section;
+    }
+    const row=document.createElement("div");
+    row.className="setting "+rowClass(item.status);
+    row.innerHTML=`
+      <div class="label">
+        ${item.label}
+        <div class="path">${item.path}</div>
+      </div>
+      <div class="current">${item.current}</div>
+      <div class="recommend">${item.rec}<br><span class="badge ${badgeClass(item.status)}">${statusText(item.status)}</span></div>
+      <div class="detail"><b>Why:</b> ${item.why}</div>`;
+    row.addEventListener("click",()=>row.classList.toggle("open"));
+    panelEl.appendChild(row);
+  });
+}
+
+document.querySelectorAll(".modeBtn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    mode=btn.dataset.mode;
+    document.querySelectorAll(".modeBtn").forEach(x=>x.classList.toggle("active",x===btn));
+    activeTab=DATA[mode].tabs[0];
+    searchEl.value="";
+    renderTabs();
+    renderPanel();
+  });
+});
+searchEl.addEventListener("input",renderPanel);
+onlyEl.addEventListener("change",renderPanel);
+
+renderJob();
+renderTabs();
+renderPanel();
+</script>
+</body>
+</html>
